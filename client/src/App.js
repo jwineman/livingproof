@@ -160,6 +160,8 @@ class App extends Component {
   };
 
   render() {
+    const { actionInProgress } = this.state;
+
     if (!this.state.web3) {
       return <div>Loading...</div>;
     }
@@ -251,16 +253,40 @@ class App extends Component {
                 <Button
                   label="Button"
                   label="Create Proof"
-                  disabled={values.proofData.success}
+                  disabled={actionInProgress || values.proofData.success}
                   onClick={async () => {
-                    await this.setupProof(values.acct);
-                    this.setState({ page: "create" });
+                    this.setState({ actionInProgress: true });
+                    try {
+                      const response = await this.setupProof(values.acct);
+
+                      const acctsWithAmountsWork = this.state.accounts.map(
+                        async acct => {
+                          const amount = await this.getAmount(values.acct);
+                          const proofData = await this.checkIsProof(
+                            values.acct
+                          );
+                          return {
+                            amount,
+                            acct,
+                            proofData
+                          };
+                        }
+                      );
+
+                      const newVals = await Promise.all(acctsWithAmountsWork);
+                      this.setState({ values: newVals });
+                    } catch (e) {
+                      toast("error confirming create proof", e);
+                      console.error(e);
+                    }
+
+                    this.setState({ actionInProgress: false });
                   }}
                 />
                 <Button
                   label="Button"
                   label="Update Proof"
-                  disabled={!values.proofData.success}
+                  disabled={actionInProgress || !values.proofData.success}
                   onClick={async () => {
                     this.setState({ page: "update" });
                   }}
