@@ -2,6 +2,9 @@ import React, { Component } from "react";
 import Web3 from "./services/web3";
 import { Grommet, Anchor, Box, Button, Text, Heading } from "grommet";
 
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 import LivingProof from "./contracts/LivingProof.json";
 import "./App.css";
 import Create from "./pages/create";
@@ -262,6 +265,7 @@ class App extends Component {
         >
           <div>{this.getPage(this.state.page)}</div>
         </Box>
+        <ToastContainer />
       </Grommet>
     );
   }
