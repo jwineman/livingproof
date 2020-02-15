@@ -4,6 +4,9 @@ import { Grommet, Anchor, Box, Button, Text, Heading } from "grommet";
 
 import LivingProof from "./contracts/LivingProof.json";
 import "./App.css";
+import Create from "./pages/create";
+import Check from "./pages/check";
+import Update from "./pages/update";
 
 class App extends Component {
   state = { accounts: [], web3: null, connectError: null, page: null };
@@ -14,7 +17,7 @@ class App extends Component {
 
       const instance = new web3.eth.Contract(
         LivingProof.abi,
-        "0x9254Ab5e4F2aE4cd7D341CA532412A7240e909d5" // deployedNetwork && deployedNetwork.address
+        "0xdd0AD9847a2E65fa42763f786817f29BA618576c" // deployedNetwork && deployedNetwork.address
       );
 
       this.setState({ contract: instance, web3 });
@@ -88,6 +91,19 @@ class App extends Component {
 
   checkIsProof = async addr => {
     return await this.state.contract.methods.isProof(addr).call();
+  };
+
+  getPage = page => {
+    switch (page) {
+      case "create":
+        return <Create />;
+      case "update":
+        return <Update />;
+      case "check":
+        return <Check />;
+      default:
+        return <Create />;
+    }
   };
 
   setupProof = async addr => {
@@ -208,7 +224,7 @@ class App extends Component {
           pad="xlarge"
           gap="medium"
         >
-          <div>{this.state.page === null ? "Content" : this.state.page}</div>
+          <div>{this.getPage(this.state.page)}</div>
         </Box>
       </Grommet>
     );
