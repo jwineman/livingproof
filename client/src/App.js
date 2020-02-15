@@ -234,90 +234,101 @@ class App extends Component {
         >
           <Heading level={1}>Living Proof</Heading>
         </Box>
-        {this.state.values.map(values => {
-          return (
-            <>
-              <Box
-                direction="column"
-                justify="center"
-                align="center"
-                pad="small"
-                gap="small"
-              >
-                <div>
-                  {values.proofData.success ? (
-                    <>
-                      <h4>Address Proof</h4>
-                      <div>Proof Type: {values.proofData.proofType}</div>
-                      <div>Interval: {values.proofData.interval}</div>
-                      <div>Amount: {values.proofData.amount}</div>
-                      <div>Status: {values.proofData.status}</div>
-                    </>
-                  ) : (
-                    <span>No Proof Configured</span>
-                  )}
-                </div>
-              </Box>
-              <Box
-                direction="row-responsive"
-                justify="center"
-                align="center"
-                pad="xlarge"
-                gap="medium"
-              >
-                <Button
-                  label="Button"
-                  label="Create Proof"
-                  disabled={actionInProgress || values.proofData.success}
-                  onClick={async () => {
-                    this.setState({ actionInProgress: true });
-                    try {
-                      const response = await this.setupProof(values.acct);
-
-                      const acctsWithAmountsWork = this.state.accounts.map(
-                        async acct => {
-                          const amount = await this.getAmount(values.acct);
-                          const proofData = await this.checkIsProof(
-                            values.acct
-                          );
-                          return {
-                            amount,
-                            acct,
-                            proofData
-                          };
-                        }
-                      );
-
-                      const newVals = await Promise.all(acctsWithAmountsWork);
-                      this.setState({ values: newVals });
-                    } catch (e) {
-                      toast("error confirming create proof", e);
-                      console.error(e);
-                    }
-
-                    this.setState({ actionInProgress: false });
-                  }}
-                />
-                <Button
-                  label="Button"
-                  label="Update Proof"
-                  disabled={actionInProgress || !values.proofData.success}
-                  onClick={async () => {
-                    this.setState({ page: "update" });
-                  }}
-                />
-              </Box>
-            </>
-          );
-        })}
         <Box
           direction="row-responsive"
           justify="center"
           align="center"
-          pad="xlarge"
-          gap="medium"
+          gap="small"
         >
-          <div>{this.getPage(this.state.page)}</div>
+          <div>
+            {this.state.values.map(values => {
+              return (
+                <>
+                  <Box
+                    direction="column"
+                    justify="center"
+                    align="center"
+                    pad="small"
+                    gap="small"
+                  >
+                    <div>
+                      {values.proofData.success ? (
+                        <>
+                          <h4>Address Proof</h4>
+                          <div>Proof Type: {values.proofData.proofType}</div>
+                          <div>Interval: {values.proofData.interval}</div>
+                          <div>Amount: {values.proofData.amount}</div>
+                          <div>Status: {values.proofData.status}</div>
+                        </>
+                      ) : (
+                        <span>No Proof Configured</span>
+                      )}
+                    </div>
+                  </Box>
+                  <Box
+                    direction="row-responsive"
+                    justify="center"
+                    align="center"
+                    pad="xlarge"
+                    gap="medium"
+                  >
+                    <Button
+                      label="Button"
+                      label="Create Proof"
+                      disabled={actionInProgress || values.proofData.success}
+                      onClick={async () => {
+                        this.setState({ actionInProgress: true });
+                        try {
+                          const response = await this.setupProof(values.acct);
+
+                          const acctsWithAmountsWork = this.state.accounts.map(
+                            async acct => {
+                              const amount = await this.getAmount(values.acct);
+                              const proofData = await this.checkIsProof(
+                                values.acct
+                              );
+                              return {
+                                amount,
+                                acct,
+                                proofData
+                              };
+                            }
+                          );
+
+                          const newVals = await Promise.all(
+                            acctsWithAmountsWork
+                          );
+                          this.setState({ values: newVals });
+                        } catch (e) {
+                          toast("error confirming create proof", e);
+                          console.error(e);
+                        }
+
+                        this.setState({ actionInProgress: false });
+                      }}
+                    />
+                    <Button
+                      label="Button"
+                      label="Update Proof"
+                      disabled={actionInProgress || !values.proofData.success}
+                      onClick={async () => {
+                        this.setState({ page: "update" });
+                      }}
+                    />
+                  </Box>
+                </>
+              );
+            })}
+          </div>
+          <Box
+            direction="row-responsive"
+            justify="center"
+            align="center"
+            pad="xlarge"
+            gap="medium"
+          >
+            <div>{this.getPage(this.state.page)}</div>
+          </Box>
         </Box>
         <ToastContainer />
       </Grommet>
