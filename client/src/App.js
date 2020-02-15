@@ -19,7 +19,7 @@ class App extends Component {
       const deployedNetwork = LivingProof.networks[networkId];
       const instance = new web3.eth.Contract(
         LivingProof.abi,
-        deployedNetwork && deployedNetwork.address,
+        deployedNetwork && deployedNetwork.address
       );
 
       // const instance = new web3.eth.Contract(
@@ -97,7 +97,8 @@ class App extends Component {
   };
 
   checkIsProof = async addr => {
-    return await this.state.contract.methods.isProof(addr).call();
+    const response = await this.state.contract.methods.getProof(addr).call();
+    return response;
   };
 
   getPage = page => {
@@ -115,7 +116,7 @@ class App extends Component {
 
   setupProof = async addr => {
     const response = await this.checkIsProof(addr);
-    if (response) {
+    if (response && response.success) {
       console.log("already have a proof");
       return;
     }
@@ -217,7 +218,7 @@ class App extends Component {
                 label="Check Proof"
                 onClick={async () => {
                   const result = await this.checkIsProof(values.acct);
-                  alert(result);
+                  console.log(result);
                   this.setState({ page: "check" });
                 }}
               />

@@ -34,6 +34,7 @@ contract LivingProof {
     public
     view
     returns(
+      bool success,
       uint proofType,
       uint interval,
       uint amount,
@@ -44,7 +45,7 @@ contract LivingProof {
       bytes32 message
     )
   {
-    require(isProof(proofAddress));
+    success = isProof(proofAddress);
     proofType = proofs[proofAddress].proofType;
     interval = proofs[proofAddress].interval;
     amount = proofs[proofAddress].amount;
@@ -54,6 +55,7 @@ contract LivingProof {
     recipient = proofs[proofAddress].recipient;
     message = proofs[proofAddress].message;
     return(
+      success,
       proofType,
       interval,
       amount,
