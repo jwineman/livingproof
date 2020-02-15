@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "ethereum-identicon": "^0.0.4",
     "react-toastify": "^5.5.0"
   }
 }
