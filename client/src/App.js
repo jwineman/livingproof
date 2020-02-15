@@ -25,6 +25,19 @@ class App extends Component {
         deployedNetwork && deployedNetwork.address
       );
 
+      const latestBlock = web3.eth.getBlock("latest");
+
+      instance.events.NewProof(
+        { fromBlock: latestBlock.number },
+        (error, result) => {
+          if (!error) {
+            toast("created new proof", { type: "success" });
+          } else {
+            toast("unable to create", { type: "error" });
+          }
+        }
+      );
+
       // const instance = new web3.eth.Contract(
       //   LivingProof.abi,
       //   "0x9254Ab5e4F2aE4cd7D341CA532412A7240e909d5" // deployedNetwork && deployedNetwork.address
