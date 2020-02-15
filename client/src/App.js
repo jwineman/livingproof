@@ -70,11 +70,17 @@ class App extends Component {
         accounts = await this.getAccounts();
       }
 
+      if (accounts.length === 0) {
+        return;
+      }
+
       const acctsWithAmountsWork = accounts.map(async acct => {
         const amount = await this.getAmount(acct);
+        const proofData = await this.checkIsProof(acct);
         return {
           amount,
-          acct
+          acct,
+          proofData
         };
       });
 
@@ -189,40 +195,71 @@ class App extends Component {
         </Box>
         {this.state.values.map(values => {
           return (
-            <Box
-              direction="row-responsive"
-              justify="center"
-              align="center"
-              pad="xlarge"
-              gap="medium"
-            >
-              {values.acct} (
-              {this.state.web3.utils.fromWei(values.amount, "ether")})
-              <Button
-                label="Button"
-                label="Create Proof"
-                onClick={async () => {
-                  await this.setupProof(values.acct);
-                  this.setState({ page: "create" });
-                }}
-              />
-              <Button
-                label="Button"
-                label="Update Proof"
-                onClick={async () => {
-                  this.setState({ page: "update" });
-                }}
-              />
-              <Button
-                label="Button"
-                label="Check Proof"
-                onClick={async () => {
-                  const result = await this.checkIsProof(values.acct);
-                  console.log(result);
-                  this.setState({ page: "check" });
-                }}
-              />
-            </Box>
+            <>
+              <Box
+                direction="row-responsive"
+                justify="center"
+                align="center"
+                pad="small"
+                gap="small"
+              >
+                {values.acct} (
+                {this.state.web3.utils.fromWei(values.amount, "ether")})
+              </Box>
+              <Box
+                direction="column"
+                justify="center"
+                align="center"
+                pad="small"
+                gap="small"
+              >
+                <div>
+                  {values.proofData.success ? (
+                    <>
+                      <h4>Address Proof</h4>
+                      <div>Proof Type: {values.proofData.proofType}</div>
+                      <div>Interval: {values.proofData.interval}</div>
+                      <div>Amount: {values.proofData.amount}</div>
+                      <div>Status: {values.proofData.status}</div>
+                    </>
+                  ) : (
+                    <span>No Proof Configured</span>
+                  )}
+                </div>
+              </Box>
+              <Box
+                direction="row-responsive"
+                justify="center"
+                align="center"
+                pad="xlarge"
+                gap="medium"
+              >
+                <Button
+                  label="Button"
+                  label="Create Proof"
+                  onClick={async () => {
+                    await this.setupProof(values.acct);
+                    this.setState({ page: "create" });
+                  }}
+                />
+                <Button
+                  label="Button"
+                  label="Update Proof"
+                  onClick={async () => {
+                    this.setState({ page: "update" });
+                  }}
+                />
+                <Button
+                  label="Button"
+                  label="Check Proof"
+                  onClick={async () => {
+                    const result = await this.checkIsProof(values.acct);
+                    console.log(result);
+                    this.setState({ page: "check" });
+                  }}
+                />
+              </Box>
+            </>
           );
         })}
         <Box
