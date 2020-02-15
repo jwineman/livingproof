@@ -235,6 +235,7 @@ class App extends Component {
                 <Button
                   label="Button"
                   label="Create Proof"
+                  disabled={values.proofData.success}
                   onClick={async () => {
                     await this.setupProof(values.acct);
                     this.setState({ page: "create" });
@@ -243,6 +244,7 @@ class App extends Component {
                 <Button
                   label="Button"
                   label="Update Proof"
+                  disabled={!values.proofData.success}
                   onClick={async () => {
                     this.setState({ page: "update" });
                   }}
