@@ -1,40 +1,88 @@
 import React, { Component } from "react";
-import SimpleStorageContract from "./contracts/SimpleStorage.json";
 import Web3 from "./services/web3";
 
 import "./App.css";
 
 class App extends Component {
-  state = { storageValue: 0, web3: null, accounts: null, contract: null };
+  state = { accounts: [], web3: null, connectError: null };
 
   componentDidMount = async () => {
     try {
       const web3 = await Web3();
-      const accounts = await web3.eth.getAccounts();
-      this.setState({ web3, accounts });
+
+      this.setState({ web3 });
     } catch (error) {
-      alert(`Failed to load web3. Check console for details.`);
       console.error(error);
+    }
+  };
+
+  disconnectAccounts = () => {
+    this.setState({ accounts: [] });
+  };
+
+  getAccounts = () => {
+    return new Promise((resolve, reject) => {
+      this.state.web3.eth.getAccounts(async (error, accounts) => {
+        if (error) {
+          return reject(error);
+        }
+
+        return resolve(accounts);
+      });
+    });
+  };
+
+  openMetaMask = async () => {
+    try {
+      let accounts = await this.getAccounts();
+
+      if (!accounts || accounts.length === 0) {
+        await this.state.web3.connect();
+        accounts = await this.getAccounts();
+      }
+
+      this.setState({
+        connectError: null,
+        accounts
+      });
+    } catch (e) {
+      console.error(e);
+      this.setState({
+        connectError: {
+          code: e.code,
+          message: e.message
+        }
+      });
     }
   };
 
   render() {
     if (!this.state.web3) {
-      return <div>Loading Web3, accounts, and contract...</div>;
+      return <div>Loading...</div>;
     }
+
+    if (this.state.connectError) {
+      return (
+        <div className="App">
+          Metamask did not connect - {this.state.connectError.message}
+        </div>
+      );
+    }
+
+    if (!this.state.accounts || this.state.accounts.length === 0) {
+      return (
+        <div className="App">
+          <button onClick={this.openMetaMask}>Connect via Metamask</button>
+        </div>
+      );
+    }
+
     return (
       <div className="App">
-        <h1>Good to Go!</h1>
-        <p>Your Truffle Box is installed and ready.</p>
-        <h2>Smart Contract Example</h2>
-        <p>
-          If your contracts compiled and migrated successfully, below will show
-          a stored value of 5 (by default).
-        </p>
-        <p>
-          Try changing the value stored on <strong>line 40</strong> of App.js.
-        </p>
-        <div>The stored value is: {this.state.storageValue}</div>
+        {this.state.accounts.map(acct => {
+          return <div key="acct">{acct}</div>;
+        })}
+         <button onClick={this.disconnectAccounts}>Disconnect Account</button>
       </div>
     );
   }
