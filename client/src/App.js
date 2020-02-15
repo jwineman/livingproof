@@ -14,7 +14,7 @@ import Check from "./pages/check";
 import Update from "./pages/update";
 
 class App extends Component {
-  state = { accounts: [], web3: null, connectError: null, page: null };
+  state = { currentAccount: null, web3: null, connectError: null, page: null };
 
   componentDidMount = async () => {
     try {
@@ -64,7 +64,7 @@ class App extends Component {
   };
 
   disconnectAccounts = () => {
-    this.setState({ accounts: [] });
+    this.setState({ currentAccount: null });
   };
 
   getAccounts = () => {
@@ -92,22 +92,17 @@ class App extends Component {
         return;
       }
 
-      const acctsWithAmountsWork = accounts.map(async acct => {
-        const amount = await this.getAmount(acct);
-        const proofData = await this.checkIsProof(acct);
-        return {
-          amount,
-          acct,
-          proofData
-        };
-      });
-
-      const values = await Promise.all(acctsWithAmountsWork);
+      const account = accounts[0];
+      const amount = await this.getAmount(account);
+      const proofData = await this.checkIsProof(account);
 
       this.setState({
         connectError: null,
-        accounts,
-        values
+        currentAccount: {
+          address: account,
+          amount,
+          proofData
+        }
       });
     } catch (e) {
       console.error(e);
@@ -184,7 +179,7 @@ class App extends Component {
       );
     }
 
-    if (!this.state.accounts || this.state.accounts.length === 0) {
+    if (!this.state.currentAccount) {
       return (
         <Grommet plain>
           <Box
@@ -201,7 +196,6 @@ class App extends Component {
     }
 
     const Avatar = ({ val }) => {
-      console.log(val);
       return (
         <Box height="xxsmall" width="xxsmall" round="full">
           <EthereumIdenticon address={val} />
@@ -212,13 +206,13 @@ class App extends Component {
     return (
       <Grommet plain>
         <Header background="light-4" pad="small">
-          <Avatar val={this.state.values[0].acct} />
+          <Avatar val={this.state.currentAccount.address} />
           <Box direction="row" gap="medium">
-            {this.state.values[0].acct}
+            {this.state.currentAccount.address}
             <span>
               (
               {this.state.web3.utils.fromWei(
-                this.state.values[0].amount,
+                this.state.currentAccount.amount,
                 "ether"
               )}
               )
@@ -240,88 +234,87 @@ class App extends Component {
           align="center"
           gap="small"
         >
-          <div>
-            {this.state.values.map(values => {
-              return (
+          <Box
+            direction="column"
+            justify="center"
+            align="center"
+            pad="small"
+            gap="small"
+          >
+            <div>
+              {this.state.currentAccount.proofData.success ? (
                 <>
-                  <Box
-                    direction="column"
-                    justify="center"
-                    align="center"
-                    pad="small"
-                    gap="small"
-                  >
-                    <div>
-                      {values.proofData.success ? (
-                        <>
-                          <h4>Address Proof</h4>
-                          <div>Proof Type: {values.proofData.proofType}</div>
-                          <div>Interval: {values.proofData.interval}</div>
-                          <div>Amount: {values.proofData.amount}</div>
-                          <div>Status: {values.proofData.status}</div>
-                        </>
-                      ) : (
-                        <span>No Proof Configured</span>
-                      )}
-                    </div>
-                  </Box>
-                  <Box
-                    direction="row-responsive"
-                    justify="center"
-                    align="center"
-                    pad="xlarge"
-                    gap="medium"
-                  >
-                    <Button
-                      label="Button"
-                      active={this.state.page === 'create'}
-                      label="Create Proof"
-                      disabled={actionInProgress || values.proofData.success}
-                      onClick={async () => {
-                        this.setState({ actionInProgress: true });
-                        try {
-                          const response = await this.setupProof(values.acct);
-
-                          const acctsWithAmountsWork = this.state.accounts.map(
-                            async acct => {
-                              const amount = await this.getAmount(values.acct);
-                              const proofData = await this.checkIsProof(
-                                values.acct
-                              );
-                              return {
-                                amount,
-                                acct,
-                                proofData
-                              };
-                            }
-                          );
-
-                          const newVals = await Promise.all(
-                            acctsWithAmountsWork
-                          );
-                          this.setState({ values: newVals });
-                        } catch (e) {
-                          toast("error confirming create proof", e);
-                          console.error(e);
-                        }
-
-                        this.setState({ actionInProgress: false });
-                      }}
-                    />
-                    <Button
-                      label="Button"
-                      active={this.state.page === 'update'}
-                      label="Update Proof"
-                      disabled={actionInProgress || !values.proofData.success}
-                      onClick={async () => {
-                        this.setState({ page: "update" });
-                      }}
-                    />
-                  </Box>
+                  <h4>Address Proof</h4>
+                  <div>
+                    Proof Type: {this.state.currentAccount.proofData.proofType}
+                  </div>
+                  <div>
+                    Interval: {this.state.currentAccount.proofData.interval}
+                  </div>
+                  <div>
+                    Amount: {this.state.currentAccount.proofData.amount}
+                  </div>
+                  <div>
+                    Status: {this.state.currentAccount.proofData.status}
+                  </div>
                 </>
-              );
-            })}
-          </div>
+              ) : (
+                <span>No Proof Configured</span>
+              )}
+            </div>
+          </Box>
+          <Box
+            direction="row-responsive"
+            justify="center"
+            align="center"
+            pad="xlarge"
+            gap="medium"
+          >
+            <Button
+              label="Button"
+              active={this.state.page === "create"}
+              label="Create Proof"
+              disabled={
+                actionInProgress || this.state.currentAccount.proofData.success
+              }
+              onClick={async () => {
+                this.setState({ actionInProgress: true });
+                try {
+                  const response = await this.setupProof(
+                    this.state.currentAccount.address
+                  );
+                  const amount = await this.getAmount(
+                    this.state.currentAccount.address
+                  );
+                  const proofData = await this.checkIsProof(
+                    this.state.currentAccount.address
+                  );
+                  this.setState(state => ({
+                    currentAccount: {
+                      proofData,
+                      amount,
+                      address: state.currentAccount.address
+                    }
+                  }));
+                } catch (e) {
+                  toast("error confirming create proof", e);
+                  console.error(e);
+                }
+
+                this.setState({ actionInProgress: false });
+              }}
+            />
+            <Button
+              label="Button"
+              active={this.state.page === "update"}
+              label="Update Proof"
+              disabled={actionInProgress || !this.state.currentAccount.proofData.success}
+              onClick={async () => {
+                this.setState({ page: "update" });
+              }}
+            />
+          </Box>
+
           <Box
             direction="row-responsive"
             justify="center"
