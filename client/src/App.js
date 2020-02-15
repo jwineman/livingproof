@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import Web3 from "./services/web3";
-import { Grommet, Anchor, Box, Button, Text } from "grommet";
+import { Grommet, Anchor, Box, Button, Text, Heading } from "grommet";
 
 import "./App.css";
 
@@ -119,6 +119,15 @@ class App extends Component {
 
     return (
       <Grommet plain>
+        <Box
+          direction="row-responsive"
+          justify="center"
+          align="center"
+          pad="xlarge"
+          gap="medium"
+        >
+          <Heading level={1}>Living Proof</Heading>
+        </Box>
         <Box
           direction="row-responsive"
           justify="center"
