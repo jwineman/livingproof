@@ -1,6 +1,10 @@
 pragma solidity >=0.4.21 <0.7.0;
 
 contract LivingProof {
+  event NewProof(address _proofAddress, uint _proofType);
+  event KilledProof(address _proofAddress, uint _proofType);
+  event UpdatedProof(address _proofAddress, uint _proofType);
+
   struct Proof {
     uint proofType; // type of proof, 0=basic, 1=pinata
     uint interval; // interval of renewal in number of blocks
@@ -75,6 +79,7 @@ contract LivingProof {
     proofs[proofAddress].status = status;
     proofs[proofAddress].updated = block.number;
     proofs[proofAddress].index = proofIndex.push(proofAddress)-1;
+    emit NewProof(proofAddress, proofType);
     return (proofIndex.length-1, proofAddress);
   }
 
@@ -87,6 +92,7 @@ contract LivingProof {
     require(isProof(proofToKill));
     require(proofs[proofToKill].proofType == 0);
     proofs[proofToKill].status = 1;
+    emit KilledProof(proofToKill, 0);
     return true;
   }
 
@@ -99,6 +105,7 @@ contract LivingProof {
     require(proofs[proofToKill].proofType == 0);
     if (proofs[proofToKill].updated + proofs[proofToKill].interval < block.number) {
       proofs[proofToKill].status = 1;
+      emit KilledProof(proofToKill, 0);
       return true;
     }
     return false;
@@ -117,6 +124,7 @@ contract LivingProof {
     uint amount = proofs[proofToKill].amount;
     proofs[proofToKill].amount = 0;
     proofToKill.transfer(amount);
+    emit KilledProof(proofToKill, 1);
     return true;
   }
 
@@ -132,6 +140,7 @@ contract LivingProof {
       uint amount = proofs[proofToKill].amount;
       proofs[proofToKill].amount = 0;
       proofs[proofToKill].recipient.transfer(amount);
+      emit KilledProof(proofToKill, 1);
       return true;
     }
     return false;
@@ -147,6 +156,7 @@ contract LivingProof {
     proofs[proofToUpdate].interval = interval;
     proofs[proofToUpdate].message = message;
     proofs[proofToUpdate].updated = block.number;
+    emit UpdatedProof(proofToUpdate, 0);
     return true;
   }
 
@@ -162,6 +172,7 @@ contract LivingProof {
     proofs[proofToUpdate].message = message;
     proofs[proofToUpdate].updated = block.number;
     proofs[proofToUpdate].amount = proofs[proofToUpdate].amount + msg.value;
+    emit UpdatedProof(proofToUpdate, 1);
     return true;
   }
 }
