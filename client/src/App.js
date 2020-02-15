@@ -1,6 +1,8 @@
 import React, { Component } from "react";
 import Web3 from "./services/web3";
-import { Grommet, Anchor, Box, Button, Text, Heading } from "grommet";
+import { Grommet, Anchor, Box, Button, Header, Text, Heading } from "grommet";
+
+import EthereumIdenticon from "ethereum-identicon";
 
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -198,8 +200,31 @@ class App extends Component {
       );
     }
 
+    const Avatar = ({ val }) => {
+      console.log(val);
+      return (
+        <Box height="xxsmall" width="xxsmall" round="full">
+          <EthereumIdenticon address={val} />
+        </Box>
+      );
+    };
+
     return (
       <Grommet plain>
+        <Header background="light-4" pad="small">
+          <Avatar val={this.state.values[0].acct} />
+          <Box direction="row" gap="medium">
+            {this.state.values[0].acct}
+            <span>
+              (
+              {this.state.web3.utils.fromWei(
+                this.state.values[0].amount,
+                "ether"
+              )}
+              )
+            </span>
+          </Box>
+        </Header>
         <Box
           direction="row-responsive"
           justify="center"
