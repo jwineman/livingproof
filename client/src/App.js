@@ -132,7 +132,7 @@ class App extends Component {
       case "update":
         return <Update />;
       default:
-        return <Create />;
+        return null;
     }
   };
 
@@ -274,6 +274,7 @@ class App extends Component {
                   >
                     <Button
                       label="Button"
+                      active={this.state.page === 'create'}
                       label="Create Proof"
                       disabled={actionInProgress || values.proofData.success}
                       onClick={async () => {
@@ -309,6 +310,7 @@ class App extends Component {
                     />
                     <Button
                       label="Button"
+                      active={this.state.page === 'update'}
                       label="Update Proof"
                       disabled={actionInProgress || !values.proofData.success}
                       onClick={async () => {
