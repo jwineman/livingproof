@@ -229,7 +229,7 @@ class App extends Component {
           direction="row-responsive"
           justify="center"
           align="center"
-          pad="xlarge"
+          pad="small"
           gap="medium"
         >
           <Heading level={1}>Living Proof</Heading>
@@ -237,16 +237,6 @@ class App extends Component {
         {this.state.values.map(values => {
           return (
             <>
-              <Box
-                direction="row-responsive"
-                justify="center"
-                align="center"
-                pad="small"
-                gap="small"
-              >
-                {values.acct} (
-                {this.state.web3.utils.fromWei(values.amount, "ether")})
-              </Box>
               <Box
                 direction="column"
                 justify="center"
