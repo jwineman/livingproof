@@ -15,10 +15,17 @@ class App extends Component {
     try {
       const web3 = await Web3();
 
+      const networkId = await web3.eth.net.getId();
+      const deployedNetwork = LivingProof.networks[networkId];
       const instance = new web3.eth.Contract(
         LivingProof.abi,
-        "0xdd0AD9847a2E65fa42763f786817f29BA618576c" // deployedNetwork && deployedNetwork.address
+        deployedNetwork && deployedNetwork.address,
       );
+
+      // const instance = new web3.eth.Contract(
+      //   LivingProof.abi,
+      //   "0x9254Ab5e4F2aE4cd7D341CA532412A7240e909d5" // deployedNetwork && deployedNetwork.address
+      // );
 
       this.setState({ contract: instance, web3 });
     } catch (error) {
