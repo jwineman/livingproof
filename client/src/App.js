@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import Web3 from "./services/web3";
 import { Grommet, Anchor, Box, Button, Text, Heading } from "grommet";
 
+import LivingProof from "./contracts/LivingProof.json";
 import "./App.css";
 
 class App extends Component {
@@ -11,7 +12,12 @@ class App extends Component {
     try {
       const web3 = await Web3();
 
-      this.setState({ web3 });
+      const instance = new web3.eth.Contract(
+        LivingProof.abi,
+        "0x9254Ab5e4F2aE4cd7D341CA532412A7240e909d5" // deployedNetwork && deployedNetwork.address
+      );
+
+      this.setState({ contract: instance, web3 });
     } catch (error) {
       console.error(error);
     }
@@ -80,6 +86,35 @@ class App extends Component {
     }
   };
 
+  checkIsProof = async addr => {
+    return await this.state.contract.methods.isProof(addr).call();
+  };
+
+  setupProof = async addr => {
+    const response = await this.checkIsProof(addr);
+    if (response) {
+      console.log("already have a proof");
+      return;
+    }
+
+    return new Promise((resolve, reject) => {
+      this.state.contract.methods.newProof(0, 3, 0).send(
+        {
+          from: addr
+          // gas: 1000
+        },
+        (err, resp) => {
+          if (err) {
+            return reject(err);
+          }
+
+          console.log(resp);
+          return resolve(resp);
+        }
+      );
+    });
+  };
+
   render() {
     if (!this.state.web3) {
       return <div>Loading...</div>;
@@ -128,29 +163,42 @@ class App extends Component {
         >
           <Heading level={1}>Living Proof</Heading>
         </Box>
-        <Box
-          direction="row-responsive"
-          justify="center"
-          align="center"
-          pad="xlarge"
-          gap="medium"
-        >
-          <Button
-            label="Button"
-            label="Create Proof"
-            onClick={() => this.setState({ page: "create" })}
-          />
-          <Button
-            label="Button"
-            label="Update Proof"
-            onClick={() => this.setState({ page: "update" })}
-          />
-          <Button
-            label="Button"
-            label="Delete Proof"
-            onClick={() => this.setState({ page: "delete" })}
-          />
-        </Box>
+        {this.state.values.map(values => {
+          return (
+            <Box
+              direction="row-responsive"
+              justify="center"
+              align="center"
+              pad="xlarge"
+              gap="medium"
+            >
+              {values.acct} (
+              {this.state.web3.utils.fromWei(values.amount, "ether")})
+              <Button
+                label="Button"
+                label="Create Proof"
+                onClick={() => this.setState({ page: "create" })}
+              />
+              <Button
+                label="Button"
+                label="Update Proof"
+                onClick={async () => {
+                  await this.setupProof(values.acct);
+                  this.setState({ page: "update" });
+                }}
+              />
+              <Button
+                label="Button"
+                label="Check Proof"
+                onClick={async () => {
+                  const result = await this.checkIsProof(values.acct);
+                  alert(result);
+                  this.setState({ page: "check" });
+                }}
+              />
+            </Box>
+          );
+        })}
         <Box
           direction="row-responsive"
           justify="center"
