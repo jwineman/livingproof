@@ -6,6 +6,7 @@
     "node": "10.14.1"
   },
   "dependencies": {
+    "ethereum-identicon": "^0.0.4",
     "grommet": "^2.10.0",
     "react": "16.11.0",
     "react-dom": "16.11.0",
