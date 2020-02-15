@@ -177,13 +177,15 @@ class App extends Component {
               <Button
                 label="Button"
                 label="Create Proof"
-                onClick={() => this.setState({ page: "create" })}
+                onClick={async () => {
+                  await this.setupProof(values.acct);
+                  this.setState({ page: "create" });
+                }}
               />
               <Button
                 label="Button"
                 label="Update Proof"
                 onClick={async () => {
-                  await this.setupProof(values.acct);
                   this.setState({ page: "update" });
                 }}
               />
