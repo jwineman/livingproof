@@ -113,8 +113,6 @@ class App extends Component {
         return <Create />;
       case "update":
         return <Update />;
-      case "check":
-        return <Check />;
       default:
         return <Create />;
     }
@@ -247,15 +245,6 @@ class App extends Component {
                   label="Update Proof"
                   onClick={async () => {
                     this.setState({ page: "update" });
-                  }}
-                />
-                <Button
-                  label="Button"
-                  label="Check Proof"
-                  onClick={async () => {
-                    const result = await this.checkIsProof(values.acct);
-                    console.log(result);
-                    this.setState({ page: "check" });
                   }}
                 />
               </Box>
