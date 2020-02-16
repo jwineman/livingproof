@@ -82,6 +82,7 @@ class App extends Component {
       );
 
       const latestBlock = await web3.eth.getBlock("latest");
+      this.setState({ latestBlock: latestBlock.number });
 
       instance.events.NewProof({ fromBlock: 0 }, async (error, result) => {
         console.log("new", result);
@@ -134,48 +135,38 @@ class App extends Component {
       instance.events.UpdatedProof(
         { fromBlock: latestBlock.number },
         async (error, result) => {
-          console.log("new", result);
+          console.log("update", result);
           if (error) {
             return;
           }
-          //
-
-          // const newEvents = [...this.state.events];
-          // if (newEvents.find(e => e.txHash === result.transactionHash)) {
-          //   return null;
-          // }
-          const response = await this.state.contract.methods
-            .getProof(result.returnValues._proofAddress)
-            .call();
 
           const latestBlock = await web3.eth.getBlock("latest");
-          const isKilled =
-            +response.status === 1 ||
-            +response.updated + +response.interval < +latestBlock.number;
+          this.setState({ latestBlock: latestBlock.number });
 
-          console.log(response.updated, response.interval, latestBlock.number);
+          const newEventsWork = this.state.events.map(async event => {
+            const response = await this.state.contract.methods
+              .getProof(event.address)
+              .call();
 
-          const newEvent = {
-            txHash: result.transactionHash,
-            event: "newProof",
-            address: result.returnValues._proofAddress,
-            blockNumber: result.blockNumber,
-            data: response,
-            isKilled,
-            currentBlockNumber: +latestBlock.number,
-            blocksLeft:
-              +response.updated + +response.interval - +latestBlock.number
-          };
+            const isKilled =
+              +response.status === 1 ||
+              +response.updated + +response.interval < +latestBlock.number;
 
-          this.setState(state => {
-            const newEvents = state.events.filter(
-              e => e.address !== result.returnValues._proofAddress
-            );
-            newEvents.push(newEvent);
-            return {
-              events: newEvents
+            const newEvent = {
+              ...event,
+              txHash: result.transactionHash,
+              blockNumber: result.blockNumber,
+              data: response,
+              isKilled,
+              currentBlockNumber: +latestBlock.number,
+              blocksLeft:
+                +response.updated + +response.interval - +latestBlock.number
             };
+            return newEvent;
           });
+          const newEvents = await Promise.all(newEventsWork);
+
+          this.setState({ events: newEvents });
         }
       );
 
@@ -220,6 +211,7 @@ class App extends Component {
           pad="xlarge"
           gap="medium"
         >
+          <span>Latest Block: {this.state.latestBlock}</span>
           {this.state.events
             .sort((a, b) => b.blockNumber - a.blockNumber)
             .map(event => {
