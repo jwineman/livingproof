@@ -109,8 +109,8 @@ class App extends Component {
       const proofData = await this.checkIsProof(account);
 
       const latestBlock = await this.state.web3.eth.getBlock("latest");
-      const isKilled =
-        +proofData.status === 1 ||
+      const isKilled = +proofData.status === 1;
+      const isExpired =
         +proofData.updated + +proofData.interval < +latestBlock.number;
 
       this.setState({
@@ -119,7 +119,8 @@ class App extends Component {
           address: account,
           amount,
           proofData,
-          isKilled
+          isKilled,
+          isExpired
         }
       });
     } catch (e) {
@@ -179,8 +180,8 @@ class App extends Component {
       );
 
       const latestBlock = await this.state.web3.eth.getBlock("latest");
-      const isKilled =
-        +proofData.status === 1 ||
+      const isKilled = +proofData.status === 1;
+      const isExpired =
         +proofData.updated + +proofData.interval < +latestBlock.number;
 
       this.setState(state => ({
@@ -188,7 +189,8 @@ class App extends Component {
           proofData,
           amount,
           address: state.currentAccount.address,
-          isKilled
+          isKilled,
+          isExpired
         }
       }));
     } catch (e) {
@@ -286,8 +288,8 @@ class App extends Component {
       toast("proof updated!", { type: "success" });
 
       const latestBlock = await this.state.web3.eth.getBlock("latest");
-      const isKilled =
-        +proofData.status === 1 ||
+      const isKilled = +proofData.status === 1;
+      const isExpired =
         +proofData.updated + +proofData.interval < +latestBlock.number;
 
       this.setState(state => ({
@@ -296,7 +298,8 @@ class App extends Component {
           proofData,
           amount,
           address: state.currentAccount.address,
-          isKilled
+          isKilled,
+          isExpired
         }
       }));
     } catch (e) {
@@ -440,6 +443,20 @@ class App extends Component {
             </Box>
           </Header>
         ) : null}
+        {this.state.currentAccount.isExpired ? (
+          <Header
+            justify="center"
+            align="center"
+            background="status-warning"
+            pad="small"
+          >
+            <Box direction="row" justify="center" align="center" gap="medium">
+              <span style={{ fontSize: "25px", fontWeight: 600 }}>
+                !! ⏱⏱ This proof has expired....
+              </span>
+            </Box>
+          </Header>
+        ) : null}
         <Box
           direction="row-responsive"
           justify="center"
@@ -485,10 +502,14 @@ class App extends Component {
                   </div>
                   <div>
                     Status:{" "}
-                    {/** TODO::: this should probably distinguish between killed and expired??? */}
-                    {!this.state.currentAccount.isKilled
+                    {!this.state.currentAccount.isExpired &&
+                    !this.state.currentAccount.isKilled
                       ? "Up"
-                      : "Killed ☠️☠️"}
+                      : this.state.currentAccount.isKilled
+                      ? "Killed ☠️☠️"
+                      : this.state.currentAccount.isExpired
+                      ? "Expired..."
+                      : "Unknown"}
                   </div>
                   {this.state.currentAccount.proofData.message && (
                     <div>
@@ -517,7 +538,8 @@ class App extends Component {
                 disabled={
                   actionInProgress ||
                   this.state.currentAccount.proofData.success ||
-                  this.state.currentAccount.isKilled
+                  this.state.currentAccount.isKilled ||
+                  this.state.currentAccount.isExpired
                 }
                 onClick={() => {
                   this.setState({ page: "create" });
@@ -530,7 +552,8 @@ class App extends Component {
                 disabled={
                   actionInProgress ||
                   !this.state.currentAccount.proofData.success ||
-                  this.state.currentAccount.isKilled
+                  this.state.currentAccount.isKilled ||
+                  this.state.currentAccount.isExpired
                 }
                 onClick={async () => {
                   this.setState({ page: "update" });
