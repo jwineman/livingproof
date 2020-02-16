@@ -187,23 +187,55 @@ class App extends Component {
     this.setState({ actionInProgress: false });
   };
 
+  updatePinata = async (addr, vals) => {
+    return new Promise((resolve, reject) => {
+      this.state.contract.methods
+        .updatePinata(
+          addr,
+          vals.interval,
+          this.state.web3.utils.fromAscii(vals.message)
+        )
+        .send(
+          {
+            from: addr,
+            value: this.state.web3.utils.toWei(vals.amount, "ether")
+            // gas: 1000
+          },
+          (err, resp) => {
+            if (err) {
+              return reject(err);
+            }
+
+            console.log(resp);
+            return resolve(resp);
+          }
+        );
+    });
+  };
+
   updateProof = async (addr, vals) => {
     return new Promise((resolve, reject) => {
-      this.state.contract.methods.updateProof(addr, vals.interval, null).send(
-        {
-          from: addr,
-          value: this.state.web3.utils.toWei(vals.amount, "ether")
-          // gas: 1000
-        },
-        (err, resp) => {
-          if (err) {
-            return reject(err);
-          }
+      this.state.contract.methods
+        .updateProof(
+          addr,
+          vals.interval,
+          this.state.web3.utils.fromAscii(vals.message)
+        )
+        .send(
+          {
+            from: addr,
+            value: this.state.web3.utils.toWei(vals.amount, "ether")
+            // gas: 1000
+          },
+          (err, resp) => {
+            if (err) {
+              return reject(err);
+            }
 
-          console.log(resp);
-          return resolve(resp);
-        }
-      );
+            console.log(resp);
+            return resolve(resp);
+          }
+        );
     });
   };
 
@@ -228,18 +260,21 @@ class App extends Component {
   runUpdate = async vals => {
     this.setState({ actionInProgress: true });
     try {
-      //TODO
-      const response = await this.setupProof(
-        this.state.currentAccount.address,
-        vals
-      );
+      if (+this.state.currentAccount.proofData.proofType === 1) {
+        await this.updatePinata(this.state.currentAccount.address, vals);
+      } else {
+        await this.updateProof(this.state.currentAccount.address, vals);
+      }
 
       const amount = await this.getAmount(this.state.currentAccount.address);
       const proofData = await this.checkIsProof(
         this.state.currentAccount.address
       );
 
+      toast("proof updated!", { type: "success" });
+
       this.setState(state => ({
+        page: null,
         currentAccount: {
           proofData,
           amount,
@@ -247,7 +282,7 @@ class App extends Component {
         }
       }));
     } catch (e) {
-      toast("error confirming create proof", e);
+      toast("error updating proof", e);
       console.error(e);
     }
 
@@ -266,11 +301,12 @@ class App extends Component {
       case "update":
         return (
           <Update
+            interval={this.state.currentAccount.proofData.interval}
             onUpdate={this.runUpdate}
             type={
               +this.state.currentAccount.proofData.proofType === 1
-                ? "Pinata"
-                : "Basic"
+                ? "pinata"
+                : "basic"
             }
           />
         );
@@ -332,7 +368,10 @@ class App extends Component {
             style={{ height: "100%" }}
           >
             <Heading level={1}>Living Proof</Heading>
-            <br /><br /><br /><br />
+            <br />
+            <br />
+            <br />
+            <br />
             <Button
               color="accent-1"
               primary
@@ -432,6 +471,14 @@ class App extends Component {
                       ? "Up"
                       : "Killed ☠️☠️"}
                   </div>
+                  {this.state.currentAccount.proofData.message && (
+                    <div>
+                      Message:{" "}
+                      {this.state.web3.utils.toAscii(
+                        this.state.currentAccount.proofData.message
+                      )}
+                    </div>
+                  )}
                 </Box>
               </>
             ) : (
