@@ -33,7 +33,7 @@ export const Create = ({ onCreate }) => {
           await onCreate({
             type: type === "basic" ? 0 : 1,
             interval: Number(period),
-            amount: type === "basic" ? 0 : amount // keep as string for toWei call
+            amount: type === "basic" ? "0" : amount // keep as string for toWei call
           });
           console.log("NUMBER GO UP");
         }}
