@@ -13,9 +13,12 @@ import Create from "./pages/create";
 import Kill from "./pages/kill";
 import Update from "./pages/update";
 
-const Wrapper = ({ children }) => {
+const Wrapper = ({ children, backgroundColor }) => {
   return (
-    <Grommet plain>
+    <Grommet
+      plain
+      style={{ backgroundColor: backgroundColor || "inherit", height: "100%" }}
+    >
       <ToastContainer />
       {children}
     </Grommet>
@@ -294,21 +297,22 @@ class App extends Component {
 
     if (!this.state.web3) {
       return (
-        <Wrapper>
-          <div>Loading...</div>
+        <Wrapper backgroundColor="#7D4CDB">
+          <div style={{ height: "100%" }}>Loading...</div>
         </Wrapper>
       );
     }
 
     if (this.state.connectError) {
       return (
-        <Wrapper>
+        <Wrapper backgroundColor="#7D4CDB">
           <Box
             direction="row-responsive"
             justify="center"
             align="center"
             pad="xlarge"
             gap="medium"
+            style={{ height: "100%" }}
           >
             Metamask did not connect - {this.state.connectError.message}
           </Box>
@@ -318,15 +322,23 @@ class App extends Component {
 
     if (!this.state.currentAccount) {
       return (
-        <Wrapper>
+        <Wrapper backgroundColor="#7D4CDB">
           <Box
             direction="row-responsive"
             justify="center"
             align="center"
             pad="xlarge"
             gap="medium"
+            style={{ height: "100%" }}
           >
-            <Button label="Connect via Metamask" onClick={this.openMetaMask} />
+            <Heading level={1}>Living Proof</Heading>
+            <br /><br /><br /><br />
+            <Button
+              color="accent-1"
+              primary
+              label="Connect via Metamask"
+              onClick={this.openMetaMask}
+            />
           </Box>
         </Wrapper>
       );
@@ -364,8 +376,9 @@ class App extends Component {
             pad="small"
           >
             <Box direction="row" justify="center" align="center" gap="medium">
-              <span style={{ fontSize: '25px', fontWeight: 600}}>
-                !! ☠️☠️ This proof is no longer living and this account is burned. 🔥🔥
+              <span style={{ fontSize: "25px", fontWeight: 600 }}>
+                !! ☠️☠️ This proof is no longer living and this account is
+                burned. 🔥🔥
               </span>
             </Box>
           </Header>

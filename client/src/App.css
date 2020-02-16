@@ -20,3 +20,11 @@
 .App-link {
   color: #09d3ac;
 }
+
+html, body {
+  height: 100%;
+}
+
+#root {
+  height: 100%;
+}
