@@ -117,6 +117,7 @@ class App extends Component {
 
   checkIsProof = async addr => {
     const response = await this.state.contract.methods.getProof(addr).call();
+    console.log(response);
     return response;
   };
 
@@ -128,22 +129,21 @@ class App extends Component {
     }
 
     return new Promise((resolve, reject) => {
-      this.state.contract.methods
-        .newProof(vals.type, vals.interval, vals.amount)
-        .send(
-          {
-            from: addr
-            // gas: 1000
-          },
-          (err, resp) => {
-            if (err) {
-              return reject(err);
-            }
-
-            console.log(resp);
-            return resolve(resp);
+      this.state.contract.methods.newProof(vals.type, vals.interval).send(
+        {
+          from: addr,
+          value: this.state.web3.utils.toWei(vals.amount, "ether")
+          // gas: 1000
+        },
+        (err, resp) => {
+          if (err) {
+            return reject(err);
           }
-        );
+
+          console.log(resp);
+          return resolve(resp);
+        }
+      );
     });
   };
 
@@ -281,16 +281,27 @@ class App extends Component {
                 >
                   <h4>Address Proof</h4>
                   <div>
-                    Proof Type: {this.state.currentAccount.proofData.proofType}
+                    Proof Type:{" "}
+                    {+this.state.currentAccount.proofData.proofType === 1
+                      ? "Pinata"
+                      : "Basic"}
                   </div>
                   <div>
-                    Interval: {this.state.currentAccount.proofData.interval}
+                    Interval: {+this.state.currentAccount.proofData.interval}
                   </div>
                   <div>
-                    Amount: {this.state.currentAccount.proofData.amount}
+                    Amount:{" "}
+                    {this.state.web3.utils.fromWei(
+                      this.state.currentAccount.proofData.amount,
+                      "ether"
+                    )}{" "}
+                    ETH
                   </div>
                   <div>
-                    Status: {this.state.currentAccount.proofData.status}
+                    Status:{" "}
+                    {+this.state.currentAccount.proofData.status === 0
+                      ? "Up"
+                      : "Down"}
                   </div>
                 </Box>
               </>
