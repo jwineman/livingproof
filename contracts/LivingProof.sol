@@ -68,7 +68,7 @@ contract LivingProof {
   }
 
   // Create a new proof
-  function newProof(uint proofType, uint interval, uint status)
+  function newProof(uint proofType, uint interval)
     public
     payable
     returns(uint index, address proofAddress)
@@ -78,7 +78,7 @@ contract LivingProof {
     proofs[proofAddress].proofType = proofType;
     proofs[proofAddress].interval = interval;
     proofs[proofAddress].amount = msg.value;
-    proofs[proofAddress].status = status;
+    proofs[proofAddress].status = 0;
     proofs[proofAddress].updated = block.number;
     proofs[proofAddress].index = proofIndex.push(proofAddress)-1;
     emit NewProof(proofAddress, proofType);
