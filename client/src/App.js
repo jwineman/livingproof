@@ -356,6 +356,20 @@ class App extends Component {
             </span>
           </Box>
         </Header>
+        {+this.state.currentAccount.proofData.status === 1 ? (
+          <Header
+            justify="center"
+            align="center"
+            background="status-critical"
+            pad="small"
+          >
+            <Box direction="row" justify="center" align="center" gap="medium">
+              <span style={{ fontSize: '25px', fontWeight: 600}}>
+                !! ☠️☠️ This proof is no longer living and this account is burned. 🔥🔥
+              </span>
+            </Box>
+          </Header>
+        ) : null}
         <Box
           direction="row-responsive"
           justify="center"
@@ -403,7 +417,7 @@ class App extends Component {
                     Status:{" "}
                     {+this.state.currentAccount.proofData.status === 0
                       ? "Up"
-                      : "Down"}
+                      : "Killed ☠️☠️"}
                   </div>
                 </Box>
               </>
@@ -423,7 +437,8 @@ class App extends Component {
                 label="Create Proof"
                 disabled={
                   actionInProgress ||
-                  this.state.currentAccount.proofData.success
+                  this.state.currentAccount.proofData.success ||
+                  +this.state.currentAccount.proofData.status === 1
                 }
                 onClick={() => {
                   this.setState({ page: "create" });
@@ -435,7 +450,8 @@ class App extends Component {
                 label="Update Proof"
                 disabled={
                   actionInProgress ||
-                  !this.state.currentAccount.proofData.success
+                  !this.state.currentAccount.proofData.success ||
+                  +this.state.currentAccount.proofData.status === 1
                 }
                 onClick={async () => {
                   this.setState({ page: "update" });
@@ -447,7 +463,8 @@ class App extends Component {
                 label="Kill Proof"
                 disabled={
                   actionInProgress ||
-                  !this.state.currentAccount.proofData.success
+                  !this.state.currentAccount.proofData.success ||
+                  +this.state.currentAccount.proofData.status === 1
                 }
                 onClick={async () => {
                   this.setState({ page: "kill" });
