@@ -253,6 +253,24 @@ class App extends Component {
     });
   };
 
+  killPinata = async address => {
+    return new Promise((resolve, reject) => {
+      this.state.contract.methods.killPinata(address).send(
+        {
+          from: this.state.currentAccount.address
+        },
+        (err, resp) => {
+          if (err) {
+            return reject(err);
+          }
+
+          console.log(resp);
+          return resolve(resp);
+        }
+      );
+    });
+  };
+
   killProof = async address => {
     return new Promise((resolve, reject) => {
       this.state.contract.methods.killProof(address).send(
@@ -335,7 +353,11 @@ class App extends Component {
         return (
           <Kill
             onKillProof={async () => {
-              await this.killProof(this.state.currentAccount.address);
+              if (+this.state.currentAccount.proofType === 1) {
+                await this.killPinata(this.state.currentAccount.address);
+              } else {
+                await this.killProof(this.state.currentAccount.address);
+              }
               toast("proof was successfull killed", { type: "success" });
               setTimeout(() => {
                 this.setState({ currentAccount: null, page: null });
