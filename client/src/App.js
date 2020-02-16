@@ -10,7 +10,7 @@ import "react-toastify/dist/ReactToastify.css";
 import LivingProof from "./contracts/LivingProof.json";
 import "./App.css";
 import Create from "./pages/create";
-import Check from "./pages/check";
+import Kill from "./pages/kill";
 import Update from "./pages/update";
 
 class App extends Component {
@@ -195,6 +195,24 @@ class App extends Component {
     });
   };
 
+  killProof = async address => {
+    return new Promise((resolve, reject) => {
+      this.state.contract.methods.killProof(address).send(
+        {
+          from: this.state.currentAccount.address
+        },
+        (err, resp) => {
+          if (err) {
+            return reject(err);
+          }
+
+          console.log(resp);
+          return resolve(resp);
+        }
+      );
+    });
+  };
+
   runUpdate = async vals => {
     this.setState({ actionInProgress: true });
     try {
@@ -242,6 +260,19 @@ class App extends Component {
                 ? "Pinata"
                 : "Basic"
             }
+          />
+        );
+      case "kill":
+        return (
+          <Kill
+            onKillProof={async () => {
+              await this.killProof(this.state.currentAccount.address);
+              toast("proof was successfull killed", { type: "success" });
+              setTimeout(() => {
+                this.setState({ currentAccount: null, page: null });
+              }, 2500);
+            }}
+            address={this.state.currentAccount.address}
           />
         );
       default:
