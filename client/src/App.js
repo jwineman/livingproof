@@ -342,7 +342,7 @@ class App extends Component {
 
     return (
       <Wrapper>
-        <Header background="light-4" pad="small">
+        <Header background="brand" pad="small">
           <Avatar val={this.state.currentAccount.address} />
           <Box direction="row" gap="medium">
             {this.state.currentAccount.address}
