@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import Web3 from "./services/web3";
 import { Grommet, Anchor, Box, Button, Header, Text, Heading } from "grommet";
-
+import EthereumIdenticon from "ethereum-identicon";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -183,6 +183,98 @@ class App extends Component {
     }
   };
 
+  callKill = (isPinata, from, to) => {
+    if (isPinata) {
+      return new Promise((resolve, reject) => {
+        this.state.contract.methods.killPinataAnyone(to).send(
+          {
+            from
+          },
+          (err, resp) => {
+            if (err) {
+              return reject(err);
+            }
+
+            console.log(resp);
+            return resolve(resp);
+          }
+        );
+      });
+    }
+
+    return new Promise((resolve, reject) => {
+      this.state.contract.methods.killProofAnyone(to).send(
+        {
+          from
+        },
+        (err, resp) => {
+          if (err) {
+            return reject(err);
+          }
+
+          console.log(resp);
+          return resolve(resp);
+        }
+      );
+    });
+  };
+
+  handleExpireKill = async proof => {
+    if (!this.state.currentAccount) {
+      await this.openMetaMask();
+    }
+
+    await this.callKill(
+      proof.proofType === 1,
+      this.state.currentAccount.address,
+      proof.address
+    );
+  };
+
+  openMetaMask = async () => {
+    try {
+      let accounts = await this.getAccounts();
+
+      if (!accounts || accounts.length === 0) {
+        await this.state.web3.connect();
+        accounts = await this.getAccounts();
+      }
+
+      if (accounts.length === 0) {
+        return;
+      }
+
+      const account = accounts[0];
+
+      this.setState({
+        connectError: null,
+        currentAccount: {
+          address: account
+        }
+      });
+    } catch (e) {
+      console.error(e);
+      this.setState({
+        connectError: {
+          code: e.code,
+          message: e.message
+        }
+      });
+    }
+  };
+
+  getAccounts = () => {
+    return new Promise((resolve, reject) => {
+      this.state.web3.eth.getAccounts(async (error, accounts) => {
+        if (error) {
+          return reject(error);
+        }
+
+        return resolve(accounts);
+      });
+    });
+  };
+
   render() {
     if (!this.state.web3) {
       return (
@@ -191,6 +283,13 @@ class App extends Component {
         </Wrapper>
       );
     }
+    const Avatar = ({ val }) => {
+      return (
+        <Box height="xxsmall" width="xxsmall" round="full">
+          <EthereumIdenticon address={val} />
+        </Box>
+      );
+    };
 
     if (this.state.connectError) {
       return (
@@ -218,12 +317,24 @@ class App extends Component {
           pad="xlarge"
           gap="medium"
         >
+          {this.state.currentAccount && (
+            <Header background="brand" pad="small">
+              <Avatar val={this.state.currentAccount.address} />
+              <Box direction="row" gap="medium">
+                {this.state.currentAccount.address}
+              </Box>
+            </Header>
+          )}
           <span>Latest Block: {this.state.latestBlock}</span>
           {this.state.events
             .sort((a, b) => b.blockNumber - a.blockNumber)
             .map(event => {
               return (
-                <Badge isKilled={event.isKilled} isExpired={event.isExpired}>
+                <Badge
+                  isKilled={event.isKilled}
+                  isExpired={event.isExpired}
+                  onClick={() => this.handleExpireKill(event)}
+                >
                   <Icon>
                     {event.isKilled ? (
                       <svg
