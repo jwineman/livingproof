@@ -120,17 +120,6 @@ class App extends Component {
     return response;
   };
 
-  getPage = page => {
-    switch (page) {
-      case "create":
-        return <Create />;
-      case "update":
-        return <Update />;
-      default:
-        return null;
-    }
-  };
-
   setupProof = async addr => {
     const response = await this.checkIsProof(addr);
     if (response && response.success) {
@@ -154,6 +143,47 @@ class App extends Component {
         }
       );
     });
+  };
+
+  runCreation = async () => {
+    this.setState({ actionInProgress: true });
+    try {
+      const response = await this.setupProof(this.state.currentAccount.address);
+
+      const amount = await this.getAmount(this.state.currentAccount.address);
+      const proofData = await this.checkIsProof(
+        this.state.currentAccount.address
+      );
+
+      this.setState(state => ({
+        currentAccount: {
+          proofData,
+          amount,
+          address: state.currentAccount.address
+        }
+      }));
+    } catch (e) {
+      toast("error confirming create proof", e);
+      console.error(e);
+    }
+
+    this.setState({ actionInProgress: false });
+  };
+
+  getPage = page => {
+    switch (page) {
+      case "create":
+        return (
+          <Create
+            address={this.state.currentAddress}
+            onCreate={this.runCreation}
+          />
+        );
+      case "update":
+        return <Update />;
+      default:
+        return null;
+    }
   };
 
   render() {
@@ -234,16 +264,16 @@ class App extends Component {
           align="center"
           gap="small"
         >
-          <Box
-            direction="column"
-            justify="center"
-            align="center"
-            pad="small"
-            gap="small"
-          >
-            <div>
-              {this.state.currentAccount.proofData.success ? (
-                <>
+          <Box direction="column" justify="center" align="center" gap="small">
+            {this.state.currentAccount.proofData.success ? (
+              <>
+                <Box
+                  direction="column"
+                  justify="center"
+                  align="center"
+                  pad="small"
+                  gap="small"
+                >
                   <h4>Address Proof</h4>
                   <div>
                     Proof Type: {this.state.currentAccount.proofData.proofType}
@@ -257,64 +287,44 @@ class App extends Component {
                   <div>
                     Status: {this.state.currentAccount.proofData.status}
                   </div>
-                </>
-              ) : (
-                <span>No Proof Configured</span>
-              )}
-            </div>
-          </Box>
-          <Box
-            direction="row-responsive"
-            justify="center"
-            align="center"
-            pad="xlarge"
-            gap="medium"
-          >
-            <Button
-              label="Button"
-              active={this.state.page === "create"}
-              label="Create Proof"
-              disabled={
-                actionInProgress || this.state.currentAccount.proofData.success
-              }
-              onClick={async () => {
-                this.setState({ actionInProgress: true });
-                try {
-                  const response = await this.setupProof(
-                    this.state.currentAccount.address
-                  );
-                  const amount = await this.getAmount(
-                    this.state.currentAccount.address
-                  );
-                  const proofData = await this.checkIsProof(
-                    this.state.currentAccount.address
-                  );
-                  this.setState(state => ({
-                    currentAccount: {
-                      proofData,
-                      amount,
-                      address: state.currentAccount.address
-                    }
-                  }));
-                } catch (e) {
-                  toast("error confirming create proof", e);
-                  console.error(e);
+                </Box>
+              </>
+            ) : (
+              <span>No Proof Configured</span>
+            )}
+            <Box
+              direction="row-responsive"
+              justify="center"
+              align="center"
+              pad="xlarge"
+              gap="medium"
+            >
+              <Button
+                label="Button"
+                active={this.state.page === "create"}
+                label="Create Proof"
+                disabled={
+                  actionInProgress ||
+                  this.state.currentAccount.proofData.success
                 }
-
-                this.setState({ actionInProgress: false });
-              }}
-            />
-            <Button
-              label="Button"
-              active={this.state.page === "update"}
-              label="Update Proof"
-              disabled={actionInProgress || !this.state.currentAccount.proofData.success}
-              onClick={async () => {
-                this.setState({ page: "update" });
-              }}
-            />
+                onClick={() => {
+                  this.setState({ page: "create" });
+                }}
+              />
+              <Button
+                label="Button"
+                active={this.state.page === "update"}
+                label="Update Proof"
+                disabled={
+                  actionInProgress ||
+                  !this.state.currentAccount.proofData.success
+                }
+                onClick={async () => {
+                  this.setState({ page: "update" });
+                }}
+              />
+            </Box>
           </Box>
-
           <Box
             direction="row-responsive"
             justify="center"
