@@ -13,6 +13,15 @@ import Create from "./pages/create";
 import Kill from "./pages/kill";
 import Update from "./pages/update";
 
+const Wrapper = ({ children }) => {
+  return (
+    <Grommet plain>
+      <ToastContainer />
+      {children}
+    </Grommet>
+  );
+};
+
 class App extends Component {
   state = { currentAccount: null, web3: null, connectError: null, page: null };
 
@@ -284,12 +293,16 @@ class App extends Component {
     const { actionInProgress } = this.state;
 
     if (!this.state.web3) {
-      return <div>Loading...</div>;
+      return (
+        <Wrapper>
+          <div>Loading...</div>
+        </Wrapper>
+      );
     }
 
     if (this.state.connectError) {
       return (
-        <Grommet>
+        <Wrapper>
           <Box
             direction="row-responsive"
             justify="center"
@@ -299,13 +312,13 @@ class App extends Component {
           >
             Metamask did not connect - {this.state.connectError.message}
           </Box>
-        </Grommet>
+        </Wrapper>
       );
     }
 
     if (!this.state.currentAccount) {
       return (
-        <Grommet plain>
+        <Wrapper>
           <Box
             direction="row-responsive"
             justify="center"
@@ -315,7 +328,7 @@ class App extends Component {
           >
             <Button label="Connect via Metamask" onClick={this.openMetaMask} />
           </Box>
-        </Grommet>
+        </Wrapper>
       );
     }
 
@@ -328,7 +341,7 @@ class App extends Component {
     };
 
     return (
-      <Grommet plain>
+      <Wrapper>
         <Header background="light-4" pad="small">
           <Avatar val={this.state.currentAccount.address} />
           <Box direction="row" gap="medium">
@@ -452,8 +465,7 @@ class App extends Component {
             <div>{this.getPage(this.state.page)}</div>
           </Box>
         </Box>
-        <ToastContainer />
-      </Grommet>
+      </Wrapper>
     );
   }
 }
