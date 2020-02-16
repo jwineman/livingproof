@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { Select, TextInput, Button } from "grommet";
 
-export const Create = () => {
-  const [type, setType] = React.useState("basic");
-  const [period, setPeriod] = React.useState(0);
-  const [amount, setAmount] = React.useState(0);
+export const Create = ({ onCreate }) => {
+  const [type, setType] = useState("basic");
+  const [period, setPeriod] = useState(0);
+  const [amount, setAmount] = useState(0);
   return (
     <>
       <div>Type:</div>
@@ -23,13 +23,20 @@ export const Create = () => {
           <div>Amount</div>
           <TextInput
             value={amount}
-            onChange={event => setPeriod(event.target.value)}
+            onChange={event => setAmount(event.target.value)}
           />
         </>
       ) : null}
       <Button
         label="Create Living Proof"
-        onClick={() => console.log("NUMBER GO UP")}
+        onClick={async () => {
+          await onCreate({
+            type: type === "basic" ? 0 : 1,
+            interval: Number(period),
+            amount: type === "basic" ? 0 : Number(amount)
+          });
+          console.log("NUMBER GO UP");
+        }}
       />
     </>
   );

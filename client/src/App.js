@@ -120,7 +120,7 @@ class App extends Component {
     return response;
   };
 
-  setupProof = async addr => {
+  setupProof = async (addr, vals) => {
     const response = await this.checkIsProof(addr);
     if (response && response.success) {
       console.log("already have a proof");
@@ -128,27 +128,32 @@ class App extends Component {
     }
 
     return new Promise((resolve, reject) => {
-      this.state.contract.methods.newProof(0, 3, 0).send(
-        {
-          from: addr
-          // gas: 1000
-        },
-        (err, resp) => {
-          if (err) {
-            return reject(err);
-          }
+      this.state.contract.methods
+        .newProof(vals.type, vals.interval, vals.amount)
+        .send(
+          {
+            from: addr
+            // gas: 1000
+          },
+          (err, resp) => {
+            if (err) {
+              return reject(err);
+            }
 
-          console.log(resp);
-          return resolve(resp);
-        }
-      );
+            console.log(resp);
+            return resolve(resp);
+          }
+        );
     });
   };
 
-  runCreation = async () => {
+  runCreation = async vals => {
     this.setState({ actionInProgress: true });
     try {
-      const response = await this.setupProof(this.state.currentAccount.address);
+      const response = await this.setupProof(
+        this.state.currentAccount.address,
+        vals
+      );
 
       const amount = await this.getAmount(this.state.currentAccount.address);
       const proofData = await this.checkIsProof(
