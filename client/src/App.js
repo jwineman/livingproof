@@ -108,6 +108,22 @@ class App extends Component {
       const amount = await this.getAmount(account);
       const proofData = await this.checkIsProof(account);
 
+      if (!proofData.success) {
+        this.setState({
+          connectError: null,
+          currentAccount: {
+            address: account,
+            amount,
+            proofData: {
+              success: false
+            },
+            isKilled: false,
+            isExpired: false
+          }
+        });
+        return;
+      }
+
       const latestBlock = await this.state.web3.eth.getBlock("latest");
       const isKilled = +proofData.status === 1;
       const isExpired =
@@ -433,6 +449,8 @@ class App extends Component {
         </Box>
       );
     };
+
+    console.log(this.state.currentAccount);
 
     return (
       <Wrapper>
