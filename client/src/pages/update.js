@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { Select, TextInput, Button } from "grommet";
 
-export const Update = () => {
-  const type = null;
+export const Update = ({ onUpdate, type }) => {
   const [period, setPeriod] = React.useState(0);
   const [amount, setAmount] = React.useState(0);
   return (
@@ -23,7 +22,14 @@ export const Update = () => {
       ) : null}
       <Button
         label="Update Living Proof"
-        onClick={() => console.log("NUMBER GO UP")}
+        onClick={async () => {
+          await onUpdate({
+            type: type === "basic" ? 0 : 1,
+            interval: Number(period),
+            amount: type === "basic" ? 0 : amount // keep as string for toWei call
+          });
+          console.log("NUMBER GO UP");
+        }}
       />
     </>
   );

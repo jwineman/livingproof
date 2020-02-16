@@ -175,6 +175,55 @@ class App extends Component {
     this.setState({ actionInProgress: false });
   };
 
+  updateProof = async (addr, vals) => {
+    return new Promise((resolve, reject) => {
+      this.state.contract.methods.updateProof(addr, vals.interval, null).send(
+        {
+          from: addr,
+          value: this.state.web3.utils.toWei(vals.amount, "ether")
+          // gas: 1000
+        },
+        (err, resp) => {
+          if (err) {
+            return reject(err);
+          }
+
+          console.log(resp);
+          return resolve(resp);
+        }
+      );
+    });
+  };
+
+  runUpdate = async vals => {
+    this.setState({ actionInProgress: true });
+    try {
+      //TODO
+      const response = await this.setupProof(
+        this.state.currentAccount.address,
+        vals
+      );
+
+      const amount = await this.getAmount(this.state.currentAccount.address);
+      const proofData = await this.checkIsProof(
+        this.state.currentAccount.address
+      );
+
+      this.setState(state => ({
+        currentAccount: {
+          proofData,
+          amount,
+          address: state.currentAccount.address
+        }
+      }));
+    } catch (e) {
+      toast("error confirming create proof", e);
+      console.error(e);
+    }
+
+    this.setState({ actionInProgress: false });
+  };
+
   getPage = page => {
     switch (page) {
       case "create":
@@ -185,7 +234,16 @@ class App extends Component {
           />
         );
       case "update":
-        return <Update />;
+        return (
+          <Update
+            onUpdate={this.runUpdate}
+            type={
+              +this.state.currentAccount.proofData.proofType === 1
+                ? "Pinata"
+                : "Basic"
+            }
+          />
+        );
       default:
         return null;
     }
