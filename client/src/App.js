@@ -397,6 +397,18 @@ class App extends Component {
                   this.setState({ page: "update" });
                 }}
               />
+              <Button
+                label="Button"
+                active={this.state.page === "kill"}
+                label="Kill Proof"
+                disabled={
+                  actionInProgress ||
+                  !this.state.currentAccount.proofData.success
+                }
+                onClick={async () => {
+                  this.setState({ page: "kill" });
+                }}
+              />
             </Box>
           </Box>
           <Box
