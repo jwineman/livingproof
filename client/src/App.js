@@ -108,12 +108,18 @@ class App extends Component {
       const amount = await this.getAmount(account);
       const proofData = await this.checkIsProof(account);
 
+      const latestBlock = await this.state.web3.eth.getBlock("latest");
+      const isKilled =
+        +proofData.status === 1 ||
+        +proofData.updated + +proofData.interval < +latestBlock.number;
+
       this.setState({
         connectError: null,
         currentAccount: {
           address: account,
           amount,
-          proofData
+          proofData,
+          isKilled
         }
       });
     } catch (e) {
@@ -172,11 +178,17 @@ class App extends Component {
         this.state.currentAccount.address
       );
 
+      const latestBlock = await this.state.web3.eth.getBlock("latest");
+      const isKilled =
+        +proofData.status === 1 ||
+        +proofData.updated + +proofData.interval < +latestBlock.number;
+
       this.setState(state => ({
         currentAccount: {
           proofData,
           amount,
-          address: state.currentAccount.address
+          address: state.currentAccount.address,
+          isKilled
         }
       }));
     } catch (e) {
@@ -273,12 +285,18 @@ class App extends Component {
 
       toast("proof updated!", { type: "success" });
 
+      const latestBlock = await this.state.web3.eth.getBlock("latest");
+      const isKilled =
+        +proofData.status === 1 ||
+        +proofData.updated + +proofData.interval < +latestBlock.number;
+
       this.setState(state => ({
         page: null,
         currentAccount: {
           proofData,
           amount,
-          address: state.currentAccount.address
+          address: state.currentAccount.address,
+          isKilled
         }
       }));
     } catch (e) {
@@ -407,7 +425,7 @@ class App extends Component {
             </span>
           </Box>
         </Header>
-        {+this.state.currentAccount.proofData.status === 1 ? (
+        {this.state.currentAccount.isKilled ? (
           <Header
             justify="center"
             align="center"
@@ -467,7 +485,8 @@ class App extends Component {
                   </div>
                   <div>
                     Status:{" "}
-                    {+this.state.currentAccount.proofData.status === 0
+                    {/** TODO::: this should probably distinguish between killed and expired??? */}
+                    {!this.state.currentAccount.isKilled
                       ? "Up"
                       : "Killed ☠️☠️"}
                   </div>
@@ -498,7 +517,7 @@ class App extends Component {
                 disabled={
                   actionInProgress ||
                   this.state.currentAccount.proofData.success ||
-                  +this.state.currentAccount.proofData.status === 1
+                  this.state.currentAccount.isKilled
                 }
                 onClick={() => {
                   this.setState({ page: "create" });
@@ -511,7 +530,7 @@ class App extends Component {
                 disabled={
                   actionInProgress ||
                   !this.state.currentAccount.proofData.success ||
-                  +this.state.currentAccount.proofData.status === 1
+                  this.state.currentAccount.isKilled
                 }
                 onClick={async () => {
                   this.setState({ page: "update" });
@@ -524,7 +543,7 @@ class App extends Component {
                 disabled={
                   actionInProgress ||
                   !this.state.currentAccount.proofData.success ||
-                  +this.state.currentAccount.proofData.status === 1
+                  this.state.currentAccount.isKilled
                 }
                 onClick={async () => {
                   this.setState({ page: "kill" });
