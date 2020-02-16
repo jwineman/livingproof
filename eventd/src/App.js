@@ -22,8 +22,13 @@ const Badge = Styled.div`
     props.isKilled &&
     `
   background-color: #FF4040;
-  color: white;
   `}
+  ${props =>
+    props.isExpired &&
+    `
+  background-color: #FFAA15
+  `}
+
 `;
 
 const Icon = Styled.div`
@@ -100,8 +105,8 @@ class App extends Component {
           .call();
 
         const latestBlock = await web3.eth.getBlock("latest");
-        const isKilled =
-          +response.status === 1 ||
+        const isKilled = +response.status === 1;
+        const isExpired =
           +response.updated + +response.interval < +latestBlock.number;
 
         console.log(response.updated, response.interval, latestBlock.number);
@@ -113,6 +118,7 @@ class App extends Component {
           blockNumber: result.blockNumber,
           data: response,
           isKilled,
+          isExpired,
           currentBlockNumber: +latestBlock.number,
           blocksLeft:
             +response.updated + +response.interval - +latestBlock.number
@@ -148,8 +154,8 @@ class App extends Component {
               .getProof(event.address)
               .call();
 
-            const isKilled =
-              +response.status === 1 ||
+            const isKilled = +response.status === 1;
+            const isExpired =
               +response.updated + +response.interval < +latestBlock.number;
 
             const newEvent = {
@@ -158,6 +164,7 @@ class App extends Component {
               blockNumber: result.blockNumber,
               data: response,
               isKilled,
+              isExpired,
               currentBlockNumber: +latestBlock.number,
               blocksLeft:
                 +response.updated + +response.interval - +latestBlock.number
@@ -216,7 +223,7 @@ class App extends Component {
             .sort((a, b) => b.blockNumber - a.blockNumber)
             .map(event => {
               return (
-                <Badge isKilled={event.isKilled}>
+                <Badge isKilled={event.isKilled} isExpired={event.isExpired}>
                   <Icon>
                     {event.isKilled ? (
                       <svg
@@ -233,6 +240,70 @@ class App extends Component {
 	c9.019,9.019,23.642,9.019,32.66,0l120.28-120.28l120.28,120.28c9.019,9.019,23.642,9.019,32.66,0l96.295-96.294
 	c9.019-9.019,9.019-23.642,0-32.66L384.955,256z"
                         />
+                      </svg>
+                    ) : event.isExpired ? (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        height="20px"
+                        width="20px"
+                        version="1.1"
+                        viewBox="0 0 468.293 468.293"
+                        xmlSpace="preserve"
+                      >
+                        <path
+                          fill="#64798A"
+                          d="M364.275 140.489l32.721-32.721a6.854 6.854 0 000-9.692l-14.978-14.978a6.853 6.853 0 00-9.692 0l-32.721 32.721 24.67 24.67z"
+                        ></path>
+                        <path
+                          fill="#3A556A"
+                          d="M364.275 140.489l32.721-32.721a6.854 6.854 0 000-9.692l-6.688-6.688-37.567 37.567 11.534 11.534z"
+                        ></path>
+                        <path
+                          fill="#64798A"
+                          d="M104.018 140.489l-32.721-32.721a6.854 6.854 0 010-9.692l14.978-14.978a6.853 6.853 0 019.692 0l32.721 32.721-24.67 24.67z"
+                        ></path>
+                        <path
+                          fill="#3A556A"
+                          d="M104.018 140.489l-32.721-32.721a6.854 6.854 0 010-9.692l6.688-6.688 37.567 37.567-11.534 11.534z"
+                        ></path>
+                        <path
+                          fill="#D5D6DB"
+                          d="M211.106 33.08H257.236V99.91499999999999H211.106z"
+                        ></path>
+                        <circle
+                          cx="234.146"
+                          cy="270.511"
+                          r="197.782"
+                          fill="#CE412D"
+                        ></circle>
+                        <circle
+                          cx="234.146"
+                          cy="270.511"
+                          r="155.192"
+                          fill="#EBF0F3"
+                        ></circle>
+                        <path
+                          fill="#3A556A"
+                          d="M184.87 9.855V39.76c0 5.443 4.412 9.855 9.855 9.855h78.842c5.443 0 9.855-4.412 9.855-9.855V9.855c0-5.443-4.412-9.855-9.855-9.855h-78.842c-5.442 0-9.855 4.412-9.855 9.855z"
+                        ></path>
+                        <path
+                          fill="#2F4859"
+                          d="M273.567 0h-37.608v49.616h37.608c5.443 0 9.855-4.413 9.855-9.855V9.855c0-5.443-4.412-9.855-9.855-9.855z"
+                        ></path>
+                        <path
+                          fill="#E1E6E9"
+                          d="M124.409 380.246c60.606 60.606 158.868 60.606 219.474 0s60.606-158.868 0-219.474"
+                        ></path>
+                        <path
+                          fill="#2F4859"
+                          d="M245.361 257.595V164.14c0-6.194-5.021-11.215-11.215-11.215s-11.215 5.021-11.215 11.215v93.455h22.43z"
+                        ></path>
+                        <circle
+                          cx="234.146"
+                          cy="270.511"
+                          r="29.646"
+                          fill="#3A556A"
+                        ></circle>
                       </svg>
                     ) : (
                       <svg
@@ -254,8 +325,10 @@ class App extends Component {
                   </Icon>
                   <Right>
                     <TimeLeft>
-                      {event.isKilled ? (
+                      {event.isExpired ? (
                         "Expired"
+                      ) : event.isKilled ? (
+                        "Killed"
                       ) : (
                         <b>{`${event.blocksLeft} Left`}</b>
                       )}
